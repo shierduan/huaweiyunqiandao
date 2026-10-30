@@ -1,0 +1,17 @@
+services:
+  hw-checkin:
+    build:
+      context: .
+      args:
+        PIP_INDEX: https://pypi.tuna.tsinghua.edu.cn/simple
+    image: huawei-checkin:latest
+    container_name: hw-checkin
+    # 定时任务场景：跑完即退出，不常驻
+    restart: "no"
+    environment:
+      TZ: Asia/Shanghai
+      HW_DATA_DIR: /app/data
+    volumes:
+      # 登录态 / 日志 / 截图全部落在宿主机 ./data，镜像内不含任何凭据
+      - ./data:/app/data
+    command: ["checkin"]

@@ -1,0 +1,24 @@
+# ===== 华为云签到部署包：排除项 =====
+# 登录态与凭据：绝不入库、绝不进镜像
+data/
+
+# 本地虚拟环境
+venv/
+
+# 日志与运行时产物
+*.log
+__pycache__/
+*.pyc
+*.pyo
+qrcode.png
+*.qrcode.png
+
+# 服务器特定的交接文档（含 IP / 运行状态，非通用）
+HANDOVER.md
+
+# 本地 VNC / 直接运行脚本（非部署必需）
+run.sh
+start_vnc.sh
+
+# 打包产物（由 git archive 生成）
+huawei-checkin-*.tar.gz

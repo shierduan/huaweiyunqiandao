@@ -1,0 +1,20 @@
+# 关键: 登录态与凭据绝不进入镜像
+data/
+state.json
+*.log
+qrcode.png
+
+# 本地运行环境
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pyc
+
+# 版本控制与文档
+.git/
+.gitignore
+README.md
+run.sh
+start_vnc.sh
+hw.sh
