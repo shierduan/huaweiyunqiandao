@@ -387,11 +387,11 @@ python3 tools/attach_qinglong.py \
 
 ---
 
-## 17. 镜像托管到 GitHub（ghcr.io）
+## 16. 镜像托管到 GitHub（ghcr.io）
 
 仓库已内含 `.github/workflows/docker-publish.yml`，推送到 GitHub 后自动构建并推送镜像。
 
-### 17.1 步骤
+### 16.1 步骤
 
 1. 在 GitHub 新建仓库，把本仓库推送上去（`main` 或 `master` 分支）；
 2. Actions 自动触发，使用内置 `GITHUB_TOKEN` 推送，无需额外密钥；
@@ -403,7 +403,7 @@ docker pull ghcr.io/<owner>/<repo>:latest
 
 4. 若包设为私有，需先登录：`docker login ghcr.io -u <用户名> -p <PAT>`（PAT 需 `read:packages`）。
 
-### 17.2 体积与成本提醒
+### 16.2 体积与成本提醒
 
 - 基础镜像 `mcr.microsoft.com/playwright/python` 约 3.5GB，最终镜像约 4GB；
 - GitHub Actions 首次构建要拉这个基础镜像，耗时较长（约 10–20 分钟），后续走 `type=gha` 缓存会快很多；
@@ -414,3 +414,67 @@ docker pull ghcr.io/<owner>/<repo>:latest
 docker save huawei-checkin:latest | gzip > huawei-checkin.tar.gz
 docker load < huawei-checkin.tar.gz
 ```
+
+---
+
+## 17. 一键交互部署（推荐入口）
+
+在青龙所在宿主机执行，全程交互式，无需记参数：
+
+```bash
+bash deploy.sh
+```
+
+### 17.1 执行流程
+
+```
+==============================================
+ 华为云成长中心签到 · 一键交互部署
+==============================================
+青龙地址 [http://127.0.0.1:5700]:
+青龙用户名 [admin]:
+青龙密码:
+华为云账号:
+华为云密码:
+
+[1/3] 检查镜像 huawei-checkin:latest
+[2/3] 对接青龙面板
+[3/3] 完成
+```
+
+脚本做三件事：
+
+1. **准备镜像**：本地有 `huawei-checkin:latest` 直接用；没有则尝试
+   `docker pull ghcr.io/shierduan/huaweiyunqiandao:latest` 并打 tag；
+   拉取失败会询问是否本地 `docker build`
+2. **对接青龙**：调用 `tools/attach_qinglong.py`，依次完成
+   登录 → 上传 4 个调度脚本 → 写入 `HW_USERNAME` / `HW_PASSWORD` → 创建/更新 2 个定时任务
+3. **给出后续步骤**：首次联调、配通知渠道、扫码登录、重建镜像
+
+### 17.2 非交互用法（适合脚本化）
+
+所有参数都可用环境变量预置，此时不再弹交互提示：
+
+```bash
+QL_URL=http://127.0.0.1:5700 \
+QL_USER=shier \
+QL_PASS='青龙密码' \
+HW_USERNAME='GT-xxx' \
+HW_PASSWORD='华为云密码' \
+bash deploy.sh
+```
+
+### 17.3 幂等性
+
+- 镜像已存在则跳过拉取/构建
+- 脚本、环境变量、任务均「存在即更新」，重复执行不会产生重复任务
+- 部署失败后可放心重跑
+
+### 17.4 前置条件
+
+| 项 | 要求 |
+|---|---|
+| 宿主机 | 已装 Docker，且有 `docker.sock` |
+| 青龙 | 与签到容器同机（青龙头通过 `docker.sock` 起签到容器） |
+| Python | 宿主机需 `python3`（脚本用标准库，无三方依赖） |
+| 网络 | 能访问青龙地址；拉镜像需能访问 `ghcr.io` |
