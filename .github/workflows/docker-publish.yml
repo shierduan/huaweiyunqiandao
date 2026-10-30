@@ -4,7 +4,14 @@ on:
   push:
     branches: [main, master]
     tags: ['v*']
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
